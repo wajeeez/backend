@@ -9,7 +9,8 @@ const Assignemts = require('../controllers/Assignment');
 const UploadAssignment = require('../controllers/Assignment');
 const getAllAssignments = require('../controllers/GetAllAssignment');
 const StdAssignmentUpload = require('../controllers/StdAssignmentUpload')
-const GetAllSubmissions = require('../controllers/GetAllSubmissions')
+const GetAllSubmissions = require('../controllers/GetAllSubmissions');
+const TeacherMarks_Remarks = require('../controllers/TeacherMarks_Remarks');
 
 router.get('/test', (req, res) => res.json({ msg: "Working Alright" }))
 
@@ -50,6 +51,13 @@ router.get('/student/getSubmitedFileURL',StudentAuth.getSubmissionFileURL)
 router.get('/student/isSubmission',StudentAuth.CheckSubmissionAvailable)
 
 router.get('/student/allSubmissions',StudentAuth.getAllSubmission)
+router.post('/forgetpassword',StudentAuth.forgetpassword)
+
+
+//Marks Api
+
+
+router.post('/assignment/updateStudentMarks',TeacherMarks_Remarks.SubmitMarks)
 
 module.exports = router;
 

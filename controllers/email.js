@@ -99,4 +99,41 @@ async function sendEmail(to,password) {
   }
 }
 
-module.exports = sendEmail;
+
+
+async function sendEmailUpdate(to,password) {
+  let mailOptions ;
+ 
+  if(password != ""){
+    
+
+     mailOptions = {
+      from: 'e.officialspace@gmail.com',
+      to: to,
+      subject: 'Welcome to E-SPACE: Your Learning Journey Begins!',
+      text: `Dear Student,
+    
+  
+    Your Updated Password is Password is ${password}
+    
+    Best regards,
+    E-SPACE Learning Platform
+    
+    
+    `
+    };
+  }
+
+
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+}
+module.exports = {
+  sendEmailUpdate,
+  sendEmail
+} 

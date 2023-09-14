@@ -28,6 +28,15 @@ const assignmentSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  marks:{
+    type: String,
+    default:""
+  },
+  remarks:{
+    type: String,
+    default:""
+  }
+
 });
 
 const Assignment = mongoose.model('AssignmentsTeacher', assignmentSchema);

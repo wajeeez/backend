@@ -12,14 +12,42 @@ const classmodel = require("../models/classes");
 const {ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET} = require('../config/config');
 const StudentModel = require("../models/studentModel");
 const Submission = require("../models/stdsubmissionFile");
-const stdAssignmentFile = require("../models/stdassignmentFile")
-
+const stdAssignmentFile = require("../models/stdassignmentFile");
+const sendEmail = require("./email");
+const sendEmailUpdate = require("./email")
 const passwordPattern =
   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+~`\-={}[\]:;"'<>,.?/])(?!.*\s).{8,}$/;
+
+
+  function generateRandomPassword() {
+    const passwordPattern =
+      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+~`\-={}[\]:;"'<>,.?/])(?!.*\s).{8,}$/;
+  
+    const specialCharacters = '!@#$%^&*()_+~`-={}[]:;\'"<>,.?/';
+    const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+    const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const digits = '0123456789';
+  
+    const allCharacters = specialCharacters + lowercaseLetters + uppercaseLetters + digits;
+  
+    let password = '';
+    do {
+      password = '';
+      for (let i = 0; i < 8; i++) {
+        const randomIndex = Math.floor(Math.random() * allCharacters.length);
+        password += allCharacters.charAt(randomIndex);
+      }
+    } while (!passwordPattern.test(password));
+  
+    return password;
+  }
+  
+
 
 const StudentAuth ={
 
 
+ 
   //REGISTER TEACHER
   async studentlogin(req, res, next) {
     //
@@ -220,10 +248,45 @@ const StudentAuth ={
 
 
 
+  async forgetpassword(req,res,next){
+
+  try{
+    const {email} =req.body
+    
+    const randomPassword = generateRandomPassword();
+    
+    const user = await StudentModel.findOne({ stdEmail:email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'No Record Found' });
+    }
+
+    // Check if the provided email matches the stdEmail
+    if (user.stdEmail === email) {
+      // Generate a random password (you can use your own logic)
+      // Update the user's password with the random password
+      user.password = randomPassword;
+
+      // Save the updated user to the database
+      const updatedUser = await user.save();
 
 
+     
+     // Password updated successfully
+      sendEmailUpdate(email,randomPassword)
+      return res.json({updatedUser , message:"You will recieve an Email with Password to login"});
+    } else {
+    return res.status(403).json({ message: 'Email does not match stdEmail' });
+  
+    }
+  }catch (error) {
+  console.error(error);
+  return res.status(500).json({ message: 'Internal server error' });
+  }
+
+   
 
 
-
+  }
 }
 module.exports = StudentAuth;

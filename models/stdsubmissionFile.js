@@ -23,6 +23,18 @@ const submissionSchema = new mongoose.Schema({
     default: Date.now,
   },
 
+  marks:{
+    type: String,
+    default:""
+  },
+  remarks:{
+    type: String,
+    default:""
+  }
+
+
+
+
     
 });
 
