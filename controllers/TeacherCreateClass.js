@@ -96,7 +96,7 @@ const TeacherCreateClass = {
           { stdEmail: email }, // Match the specific student
           { $push: { classID: classes._id } }
         );
-        sendEmail(email,"")
+       sendEmail.sendEmail(email,"")
       }else{
 
         const name = email.split('@')[0]; 
@@ -115,7 +115,7 @@ const TeacherCreateClass = {
 
         let studentobj = await studentObje.save();
 
-        sendEmail(email,randomPassword)
+        sendEmail.sendEmail(email,randomPassword)
 
       }
 
