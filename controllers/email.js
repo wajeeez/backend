@@ -135,5 +135,9 @@ async function sendEmailUpdate(to,password) {
 }
 module.exports = {
   sendEmailUpdate,
-  sendEmail
+  
 } 
+
+module.exports = {
+  sendEmail
+}

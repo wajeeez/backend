@@ -50,7 +50,7 @@ const { GridFSBucket } = require('mongodb');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const stdAssignmentFile = require("./../models/stdassignmentFile")
-
+const NotificationSubmission = require("./../models/NotificationSubmission")
 // Create a MongoMemoryServer instance f
 
 async function StdAssignmentUpload(req, res, next) {
@@ -109,7 +109,16 @@ async function StdAssignmentUpload(req, res, next) {
     }
 
    
+    const notification = new NotificationSubmission({
+      classId:classId,
+      message:"Submission Uploaded",
+      deadline:deadline, // Save the deadline in the Assignment model
+    });
 
+    await notification.save();
+
+
+    
 
     return res.status(201).json({ message: 'Assignment uploaded successfully' });
   } catch (err) {

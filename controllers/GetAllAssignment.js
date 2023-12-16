@@ -9,7 +9,8 @@ const { GridFSBucket } = require('mongodb');
 
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
-const fileSchema = require("./../models/assignementFile")
+const fileSchema = require("./../models/assignementFile");
+const Lecture = require('../models/Lecture');
 
 async  function getAllAssignments(req, res) {
     try {
@@ -27,6 +28,25 @@ async  function getAllAssignments(req, res) {
     }
   };
   
+
+  
+async  function getAllLecture(req, res) {
+  try {
+    const { class_id } = req.params;
+
+    if (!class_id) {
+      return res.status(400).json({ error: 'classId parameter is required' });
+    }
+
+    const assignments = await Lecture.find({classId:class_id });
+
+    res.json(assignments);
+  } catch (error) {
+    console.error('Error fetching lecture:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
   
   
-  module.exports=getAllAssignments;
+  module.exports={getAllAssignments,getAllLecture};

@@ -11,10 +11,12 @@ const mongoose = require('mongoose');
 const classmodel = require("../models/classes");
 const {ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET} = require('../config/config');
 const StudentModel = require("../models/studentModel");
+const GroupModel = require("../models/Groups")
 const Submission = require("../models/stdsubmissionFile");
 const stdAssignmentFile = require("../models/stdassignmentFile");
 const sendEmail = require("./email");
-const sendEmailUpdate = require("./email")
+const sendEmailUpdate = require("./email");
+const teachermodel = require("../models/teachermodel");
 const passwordPattern =
   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+~`\-={}[\]:;"'<>,.?/])(?!.*\s).{8,}$/;
 
@@ -128,24 +130,38 @@ const StudentAuth ={
   },
   
   async fetchsingleclass(req,res,next){
-
     const classId = req.params._id;
-
-  
     console.log(classId)
-  
-
     const response = await classmodel.findOne({_id:classId})
-
     if(!response){
       res.status(500).json({ error: 'Error fetching classes' });
     }else{
-    
       res.json({response});
     }
   },
 
+  async updateStudentData(req,res,next){
 
+    try{
+    const {email,name,password}=req.body
+
+    const student = await StudentModel.findOne({stdEmail:email})
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    // Update name and password
+    student.stdName = name;
+    student.password = password;
+
+    // Save the updated student data
+    await student.save();
+
+    return res.status(200).json({ message: 'Student data updated successfully', student });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+},
 
   async getStudentData(req,res,next){
 
@@ -273,12 +289,12 @@ const StudentAuth ={
 
      
      // Password updated successfully
-      sendEmailUpdate(email,randomPassword)
-      return res.json({updatedUser , message:"You will recieve an Email with Password to login"});
+      sendEmailUpdate.sendEmail(email,randomPassword)
+      return res.status(200).json({updatedUser , message:"You will recieve an Email with Password to login"});
     } else {
     return res.status(403).json({ message: 'Email does not match stdEmail' });
   
-    }
+  }
   }catch (error) {
   console.error(error);
   return res.status(500).json({ message: 'Internal server error' });
@@ -287,6 +303,128 @@ const StudentAuth ={
    
 
 
+  },
+
+  async getAllStudents(req,res,next){
+
+    const {class_id} = req.params
+
+      //const subResponse = await stdAssignmentFile.findOne({_id:response.submissionFileURL})
+      const foundClass = await classmodel.findOne({ _id: class_id });
+
+      // Check if the class exists
+      if (!foundClass) {
+        return null; // Class not found
+      }
+      // Extract student emails from the class
+      const studentEmails = foundClass.students || [];
+    
+      // Fetch additional data for students based on emails
+      const studentsData = await StudentModel.find({ stdEmail: { $in: studentEmails } });
+  
+      // return studentsData;
+
+      res.json(studentsData);
+
+      //const submitURL = response.data.Submission;
+    
+
+  },
+
+  async creatGroup(req,res,next){
+
+    const {class_id} = req.params
+    const {stdIds} = req.body
+
+      //const subResponse = await stdAssignmentFile.findOne({_id:response.submissionFileURL})
+
+
+    console.log(class_id)
+    console.log(stdIds)
+
+
+
+    const group = new GroupModel({
+     
+      stdIds:stdIds,
+      classID:class_id
+    })
+
+    let response = await group.save();
+   
+    res.status(200).json({message:"SuccessFull"});
+   
+
+  },
+
+  
+  async getAllGroups(req,res,next){
+
+  
+
+    const {class_id} = req.params
+    
+
+      //const subResponse = await stdAssignmentFile.findOne({_id:response.submissionFileURL})
+
+
+    
+
+      const groups = await GroupModel.find({classID :class_id });
+    
+      // console.log(students)
+      if (!groups) {
+        return res.status(404).send("Student not found.");
+    }
+
+    return res.status(200).json(groups)
+
+  },
+
+
+
+  async updateTeacherData(req,res,next){
+
+    try{
+    const {email,name,password}=req.body;
+
+
+    const teacherEmail =email;
+    const teacher = await teachermodel.findOne({email:email})
+   
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+  
+    // Update name and password
+    if(name!="" || name != null){
+      teacher.tname = name;
+      const teacherClasses = await classes.updateMany(
+        { teacherEmail: teacherEmail },
+        { $set: { teacherName: name } }
+      );
+
+
+      if(teacherClasses.modifiedCount < 0){
+      return res.status(404).json({ error: 'Cant Update Name of Teacher', message: err.message });
+ 
+      }
+    }
+
+    teacher.password = password;
+
+    // Save the updated student data
+    await teacher.save();
+    
+
+    return res.status(200).json({ message: 'Teacher data updated successfully', teacher });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
+},
+
 }
+
+
 module.exports = StudentAuth;

@@ -10,7 +10,34 @@ const RefreshToken = require("../models/token");
 
 
 const {ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET} = require('../config/config');
+const teachermodel = require("../models/teachermodel");
 
+const sendEmail = require("./email");
+const sendEmailUpdate = require("./email")
+
+  function generateRandomPassword() {
+    const passwordPattern =
+      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+~`\-={}[\]:;"'<>,.?/])(?!.*\s).{8,}$/;
+  
+    const specialCharacters = '!@#$%^&*()_+~`-={}[]:;\'"<>,.?/';
+    const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+    const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const digits = '0123456789';
+  
+    const allCharacters = specialCharacters + lowercaseLetters + uppercaseLetters + digits;
+  
+    let password = '';
+    do {
+      password = '';
+      for (let i = 0; i < 8; i++) {
+        const randomIndex = Math.floor(Math.random() * allCharacters.length);
+        password += allCharacters.charAt(randomIndex);
+      }
+    } while (!passwordPattern.test(password));
+  
+    return password;
+  }
+  
 
 const passwordPattern =
   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+~`\-={}[\]:;"'<>,.?/])(?!.*\s).{8,}$/;
@@ -65,13 +92,6 @@ const TeacherAuthController = {
     //Password Hashing
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    //Save Data in DB
-
-    let accessToken;
-    let refreshToken;
-
-    let user;
 
     try {
       const userToRegister = new Teacher({
@@ -131,17 +151,28 @@ const TeacherAuthController = {
         return next(error);
       }
 
-      //Passowrd Decrypt
-      const match = await bcrypt.compare(password, teacher.password);
 
-      if (!match) {
+      if(teacher.password !=password ){
         const error = {
-          status: 401,
-          message: "Invalid Password",
-        };
+                status: 401,
+                message: "Invalid Password",
+              };
+      
+              return next(error);
 
-        return next(error);
       }
+      
+      //Passowrd Decrypt
+      // const match = await bcrypt.compare(password, teacher.password);
+
+    //   if (!match) {
+    //     const error = {
+    //       status: 401,
+    //       message: "Invalid Password",
+    //     };
+
+    //     return next(error);
+    //   }
     } catch (error) {
       return next(error);
     }
@@ -170,7 +201,49 @@ const TeacherAuthController = {
     res.clearCookie("refreshToken");
   
     res.status(200).json({ user: null, auth: false });
-  }
+  },
+
+  async forgetpassword(req,res,next){
+
+    try{
+      const {email} =req.body
+      
+      const randomPassword = generateRandomPassword();
+      
+      const user = await teachermodel.findOne({ email:email });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'No Record Found' });
+      }
+  
+      // Check if the provided email matches the stdEmail
+      if (user.email === email) {
+
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        user.password=hashedPassword
+        // Save the updated user to the database
+        const updatedUser = await user.save();
+        // Password updated successfully
+
+        console.log("randomPassword",randomPassword)
+        sendEmailUpdate.sendEmail(email,randomPassword)
+        return res.status(200).json({updatedUser , message:"You will recieve an Email with Password to login"});
+      } else {
+      return res.status(403).json({ message: 'Email does not match Teacher Email' });
+    
+    }
+    }catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+    }
+  
+     
+  
+  
+    },
+  
+
+    
 
 
 };
