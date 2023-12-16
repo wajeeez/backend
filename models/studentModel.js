@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
 const students = new mongoose.Schema({
-    stdName:{
-        type: String,
-        required: false
-    },
-    stdEmail: {
-        type: String,
-        required: true
+      stdName:{
+          type: String,
+          required: false
       },
+      stdEmail: {
+          type: String,
+          required: true
+        },
       classID: {
         type: [String],
         required: true

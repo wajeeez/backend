@@ -1,3 +1,4 @@
+const { date } = require('joi');
 const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema({
@@ -5,6 +6,8 @@ const assignmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+
   teacherID: {
     type: String,
     required: true,
@@ -21,12 +24,31 @@ const assignmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  fileName:{
+    type:String,
+    required:true,
+    default:""
+  },
+  title:{
+    type:String,
+    required:true,
+    default:""
+  },
   submissionURL:{
     type:[String],
   },
   deadline: {
     type: Date,
     required: true,
+  },
+
+  time: {
+    type: String,
+    required: true,
+  },
+  totalMarks:{
+    type: String,
+    default:""
   },
   marks:{
     type: String,
