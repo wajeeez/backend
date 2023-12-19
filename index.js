@@ -16,6 +16,10 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const stdAssignmentFile =require("./models/stdassignmentFile")
 
+
+
+
+
 // const upload = multer({ dest: 'uploads/' });
 
 // const corsOptions ={
@@ -24,6 +28,9 @@ const stdAssignmentFile =require("./models/stdassignmentFile")
 // }
 
 const app = express();
+
+
+
 
 const corsOptions = {
 
@@ -65,10 +72,14 @@ app.get('/files/:id', async (req, res) => {
 
     res.send(file.data);
   } catch (error) {
-    console.error(error);
+    console.error(error); 
     res.status(500).json({ message: 'Error retrieving file' });
   }
 });
+
+
+// Endpoint to send push notifications
+
 
 
 app.get('/submission/:id', async (req, res) => {
