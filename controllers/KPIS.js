@@ -19,13 +19,56 @@ const Group = require('../models/Groups');
 const NotificationSubmission = require('../models/NotificationSubmission');
 const GroupModel = require('../models/Groups');
 const Submission = require('../models/stdsubmissionFile');
+const classes = require('../models/classes');
 // Create a MongoMemoryServer instance f
 
 
 
 const KPIS = {
 
+
+  async getTotalStudentsbyclassId(req,res,next) {
+
+    try {
+      const { _id } = req.params;
+
+      const classData = await classes.findById(_id);
+  
+      if (!classData) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+  
+      const totalStudents = classData.students.length;
+  
+      return res.status(200).json({ totalStudents });
+    } catch (error) {
+      console.error('Error in Retriving Total Students:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+  },
+
+
+
+
     async getTotalStudentsbyclassId(req,res,next) {
+
+      try {
+        const { _id } = req.params;
+  
+        const classData = await classes.findById(_id);
+    
+        if (!classData) {
+          return res.status(404).json({ error: 'Class not found' });
+        }
+    
+        const totalStudents = classData.students.length;
+    
+        return res.status(200).json({ totalStudents });
+      } catch (error) {
+        console.error('Error in Retriving Total Students:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
 
     },
 

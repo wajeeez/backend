@@ -17,8 +17,10 @@ const NotificationUploadGroupAssignment = require('../models/NotificationUploadG
 const NotificationAssignmentUpload = require('../models/NotificationUploadAssignment');
 const Group = require('../models/Groups');
 const NotificationSubmission = require('../models/NotificationSubmission');
-// Create a MongoMemoryServer instance f
 
+const admin = require('firebase-admin')
+// Create a MongoMemoryServer instance f
+const serviceAccount = require('../config/servicekey.json');
 
 
 async function UploadAssignment(req, res, next) {
@@ -64,11 +66,10 @@ async function UploadAssignment(req, res, next) {
       classId: classId,
       message: "New Assignment Uploaded",
       deadline: deadline, // Save the deadline in the Assignment model
+      time:time,
     });
 
     await notification.save();
-
-
 
     return res.status(201).json({ message: 'Assignment uploaded successfully' });
   } catch (err) {
@@ -86,7 +87,7 @@ async function UploadGroupAssignment(req, res, next) {
     }
 
     const { originalname, buffer, mimetype } = req.file;
-    const { groupId, classId, deadline } = req.body;
+    const { groupId, classId, deadline ,time} = req.body;
 
 
     const group = await Group.findOne({ _id: groupId })
@@ -108,6 +109,7 @@ async function UploadGroupAssignment(req, res, next) {
       const fileURL = savedFile._id;
       group.fileURL = fileURL;
       group.deadline = deadline;
+      group.time =time;
 
 
       await group.save();
@@ -117,7 +119,8 @@ async function UploadGroupAssignment(req, res, next) {
 
         classId: classId,
         message: "New Assignment Uploaded",
-        deadline: deadline, // Save the deadline in the Assignment model
+        deadline: deadline, 
+        time:time,// Save the deadline in the Assignment model
       });
 
       await groupNotification.save();
@@ -136,6 +139,29 @@ async function UploadGroupAssignment(req, res, next) {
 };
 
 
+
+
+
+
+async function deleteGroup (req,res,next){
+  try {
+    const { groupId } = req.params;
+
+    // Find and delete the group
+    const deletedGroup = await Group.findOneAndDelete({ _id: groupId });
+
+    if (!deletedGroup) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    return res.status(200).json({ message: 'Group deleted successfully' });
+  } catch (err) {
+    // Handle any errors that occurred during group deletion
+    return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+
+
+};
 
 async function UploadSubmission(req, res, next) {
   try {
@@ -230,6 +256,8 @@ async function UploadLecture(req, res, next) {
     return res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
+
+
 
 
 
@@ -345,8 +373,6 @@ async function editTeacherAssignment(req, res, next) {
 
       // Save the new file document
       const savedFile = await newFile.save();
-
-      // Update the file URL in the existing lecture
       existingAssignment.fileURL = savedFile._id;
     }
 
@@ -368,6 +394,9 @@ async function editTeacherAssignment(req, res, next) {
     return res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 }
+
+
+
 
 
 
@@ -522,6 +551,6 @@ async function deleteSubmission(req, res, next) {
 
 module.exports = {
   UploadAssignment, UploadLecture, UploadGroupAssignment
-  , deleteAssignment, DeleteLecture, deleteSubmission,
+  , deleteAssignment, DeleteLecture, deleteSubmission,deleteGroup,
   EditLecture, UploadSubmission,SubmitGroupMarks, getAssignmentNotification,editTeacherAssignment, getSubmissionNotification
 };

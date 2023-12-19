@@ -342,12 +342,15 @@ const StudentAuth ={
     console.log(class_id)
     console.log(stdIds)
 
+    const time = null
 
 
     const group = new GroupModel({
      
       stdIds:stdIds,
-      classID:class_id
+      classID:class_id,
+    
+      
     })
 
     let response = await group.save();
