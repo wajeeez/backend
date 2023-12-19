@@ -18,11 +18,6 @@ const NotificationAssignmentUpload = require('../models/NotificationUploadAssign
 const Group = require('../models/Groups');
 const NotificationSubmission = require('../models/NotificationSubmission');
 
-const admin = require('firebase-admin')
-// Create a MongoMemoryServer instance f
-const serviceAccount = require('../config/servicekey.json');
-
-
 async function UploadAssignment(req, res, next) {
   try {
     // Check if a file was uploaded
