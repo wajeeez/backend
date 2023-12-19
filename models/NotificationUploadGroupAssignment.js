@@ -1,4 +1,5 @@
 
+const { required } = require('joi');
 const mongoose = require('mongoose');
 
 
@@ -10,6 +11,11 @@ const NotificationUploadGroupAssignment = new mongoose.Schema({
   deadline: {
     type: Date,
     required: true,
+  },
+
+  time:{
+    type:String,
+    required:true
   },
   message: {
     type: [String],

@@ -16,7 +16,6 @@ const Groups = new mongoose.Schema({
       },
       fileName:{
         type:String,
-      
         default:""
       },
       submissionURL:{
@@ -26,6 +25,10 @@ const Groups = new mongoose.Schema({
       deadline: {
         type: Date,
         default:""
+      },
+      time: {
+        type: String,
+        default:"",
       },
       marks:{
         type: String,

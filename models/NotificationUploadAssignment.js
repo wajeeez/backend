@@ -11,6 +11,10 @@ const NotificationAssignmentUpload = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  time:{
+    type:String,
+    required:true
+  },
   message: {
     type: [String],
     required: true

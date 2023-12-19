@@ -16,7 +16,4 @@ const NotificationSubmission = new mongoose.Schema({
 
 });
 
-
-
-
 module.exports = mongoose.model("NotificationSubmission", NotificationSubmission,"NotificationSubmission");
