@@ -13,6 +13,7 @@ const StdAssignmentUpload = require('../controllers/StdAssignmentUpload')
 const GetAllSubmissions = require('../controllers/GetAllSubmissions');
 const TeacherMarks_Remarks = require('../controllers/TeacherMarks_Remarks');
 const KPIS = require('../controllers/KPIS');
+const QuizStdUpload = require('../controllers/QuizUpload');
 
 router.get('/test', (req, res) => res.json({ msg: "Working Alright" }))
 
@@ -54,7 +55,7 @@ router.post('/student/delete/submission/:fileURL',UploadAssignment.deleteSubmiss
 
 router.get('/teacher/assignments/list/:class_id', getAllAssignments.getAllAssignments)
 router.post('/student/assignments/upload', StdAssignmentUpload)
-router.get('/student/assignment/submissionAll/:fileURL', GetAllSubmissions)
+router.get('/student/assignment/submissionAll/:fileURL', GetAllSubmissions.GetAllSubmissions)
 router.get('/student/submitted',StudentAuth.getSubmittedAssignment)
 router.get('/student/getSubmitedFileURL',StudentAuth.getSubmissionFileURL)
 router.get('/student/isSubmission',StudentAuth.CheckSubmissionAvailable)
@@ -101,5 +102,33 @@ router.post('/getKPIS',KPIS.getAssignmentStatistics)
 
 router.post('/getTotalStudentCount/:_id',KPIS.getTotalStudentsbyclassId)
 
-module.exports = router;
+router.get('/teacher/getName/:email',TeacherAuthController.getName)
 
+//Quiz
+
+//Teacher Side Quiz
+router.post('/teacher/quiz/upload', UploadAssignment.UploadQuiz)
+router.post('/teacher/quizEdit/:_id', UploadAssignment.quizTeacherEdit)
+router.post('/teacher/deleteQuiz/:_id', UploadAssignment.deleteQuiz)
+router.get('/teacher/quiz/list/:class_id', getAllAssignments.getAllQuiz)
+router.post('/quiz/updateStudentMarks',TeacherMarks_Remarks.SubmitQuizMarks)
+
+
+//Student Side Quiz
+
+
+
+
+router.post('/student/quiz/upload', QuizStdUpload)
+router.get('/student/quiz/submissionAll/:fileURL', GetAllSubmissions.GetALLQuizSubmission)
+router.get('/student/quiz/submitted',StudentAuth.getQuizAssignment)
+router.get('/student/quiz/getSubmitedFileURL',StudentAuth.getQuizFileURL)
+router.get('/student/quiz/isSubmission',StudentAuth.CheckQuizSubmission)
+router.get('/student/quiz/allSubmissions',StudentAuth.getAllQuizSubmission)
+
+router.post('/student/quiz/delete/submission/:fileURL',UploadAssignment.deleteQuizSubmission)
+
+
+
+
+module.exports = router;
