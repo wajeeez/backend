@@ -20,6 +20,9 @@ const NotificationSubmission = require('../models/NotificationSubmission');
 const GroupModel = require('../models/Groups');
 const Submission = require('../models/stdsubmissionFile');
 const classes = require('../models/classes');
+
+const Quiz = require('../models/Quiz');
+const quizSubmission = require('../models/QuizSubmissionFile');
 // Create a MongoMemoryServer instance f
 
 
@@ -85,11 +88,15 @@ const KPIS = {
           const groupAssignment = await GroupModel.find({classID: class_id})
           const lectures = await Lecture.find({ classId: class_id });
           const submisison = await Submission.find({classId:class_id,Email:email})
+          const totalQ = await Quiz.find({classId:class_id})
+          const submittedQ = await quizSubmission.find({classId:class_id,Email:email})
           // Calculate total number of assignments
           const totalAssignments = assignments.length;
           const totalGroupAssignment= groupAssignment.length;
           const submittedAssignments =submisison.length;
           const totalLectures = lectures.length;
+          const totalQuiz = totalQ.length
+          const submittedQuiz = submittedQ.length
           // Calculate total number of assignments with submission URL not empty or null
         
           const submittedGroupAssignments = groupAssignment.filter(
@@ -101,7 +108,9 @@ const KPIS = {
             totalGroupAssignment,
             totalAssignments,
             submittedAssignments,
-            submittedGroupAssignments
+            submittedGroupAssignments,
+            totalQuiz,
+            submittedQuiz
           });
         } catch (error) {
           console.error('Error fetching assignment statistics:', error);

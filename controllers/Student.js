@@ -152,6 +152,7 @@ const StudentAuth ={
     }
     // Update name and password
     student.stdName = name;
+
     student.password = password;
 
     // Save the updated student data
@@ -494,7 +495,8 @@ const StudentAuth ={
       }
     }
 
-    teacher.password = password;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    teacher.password = hashedPassword;
 
     // Save the updated student data
     await teacher.save();

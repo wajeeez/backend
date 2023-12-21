@@ -152,27 +152,27 @@ const TeacherAuthController = {
       }
 
 
-      if(teacher.password !=password ){
+      // if(teacher.password !=password ){
+      //   const error = {
+      //           status: 401,
+      //           message: "Invalid Password",
+      //         };
+      
+      //         return next(error);
+
+      // }
+      
+      // Passowrd Decrypt
+      const match = await bcrypt.compare(password, teacher.password);
+
+      if (!match) {
         const error = {
-                status: 401,
-                message: "Invalid Password",
-              };
-      
-              return next(error);
+          status: 401,
+          message: "Invalid Password",
+        };
 
+        return next(error);
       }
-      
-      //Passowrd Decrypt
-      // const match = await bcrypt.compare(password, teacher.password);
-
-    //   if (!match) {
-    //     const error = {
-    //       status: 401,
-    //       message: "Invalid Password",
-    //     };
-
-    //     return next(error);
-    //   }
     } catch (error) {
       return next(error);
     }
@@ -243,8 +243,9 @@ async getName(req, res, next) {
   
       // Check if the provided email matches the stdEmail
       if (user.email === email) {
-
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+       
         user.password=hashedPassword
         // Save the updated user to the database
         const updatedUser = await user.save();
