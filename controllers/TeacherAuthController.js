@@ -203,6 +203,31 @@ const TeacherAuthController = {
     res.status(200).json({ user: null, auth: false });
   },
 
+ 
+async getName(req, res, next) {
+  try {
+    // Extract email from request params
+    const { email } = req.params;
+
+    // Find the teacher by email
+    const teacher = await Teacher.findOne({ email });
+
+    // If the teacher is found, return the teacher name
+    if (teacher) {
+      const teacherName = teacher.tname;
+      return res.json({ teacherName });
+    } else {
+      // If the teacher is not found, return an appropriate response
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+  } catch (error) {
+    // Handle any errors that occur during the process
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+},
+
+
   async forgetpassword(req,res,next){
 
     try{
@@ -243,8 +268,8 @@ const TeacherAuthController = {
     },
   
 
-    
-
+  
+ 
 
 };
 

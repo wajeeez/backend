@@ -50,10 +50,12 @@ const { GridFSBucket } = require('mongodb');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const stdAssignmentFile = require("./../models/stdassignmentFile")
-const NotificationSubmission = require("./../models/NotificationSubmission")
+const NotificationSubmission = require("./../models/NotificationSubmission");
+const quizSubmission = require('../models/QuizSubmissionFile');
+const Quiz = require('../models/Quiz');
 // Create a MongoMemoryServer instance f
 
-async function StdAssignmentUpload(req, res, next) {
+async function QuizStdUpload(req, res, next) {
   try {
     // Check if a file was uploaded
     if (!req.file) {
@@ -61,7 +63,7 @@ async function StdAssignmentUpload(req, res, next) {
     }
 
     const { originalname, buffer, mimetype } = req.file;
-    const { Email ,classId,assignmentFileURL,Name,  deadline } = req.body;
+    const { Email ,classId,assignmentFileURL, Name,  deadline } = req.body;
 
 
     const file = new stdAssignmentFile({
@@ -80,7 +82,7 @@ async function StdAssignmentUpload(req, res, next) {
     console.log(submissionFileURL)
 
 
-     const newAssignment = new Submission({
+     const newAssignment = new quizSubmission({
       Email,
       classId,
       Name,
@@ -97,7 +99,7 @@ async function StdAssignmentUpload(req, res, next) {
 
 
 
-    const updatedAssignment = await Assignment.findOneAndUpdate(
+    const updatedAssignment = await Quiz.findOneAndUpdate(
       { fileURL: assignmentFileURL, classId: classId },
       {
         studentEmails: Email,
@@ -121,11 +123,11 @@ async function StdAssignmentUpload(req, res, next) {
 
     
 
-    return res.status(201).json({ message: 'Assignment uploaded successfully' });
+    return res.status(201).json({ message: 'Quiz uploaded successfully' });
   } catch (err) {
     // Handle any errors that occurred during assignment upload
     return res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
 
-module.exports = StdAssignmentUpload;
+module.exports = QuizStdUpload;

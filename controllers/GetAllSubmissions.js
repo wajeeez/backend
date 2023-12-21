@@ -6,7 +6,8 @@ const { GridFSBucket } = require('mongodb');
 
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
-const fileSchema = require("./../models/assignementFile")
+const fileSchema = require("./../models/assignementFile");
+const quizSubmission = require('../models/QuizSubmissionFile');
 
 
 
@@ -29,5 +30,24 @@ async  function GetAllSubmissions(req, res) {
   };
   
   
+  async  function GetALLQuizSubmission(req, res) {
+    try {
+      const { fileURL } = req.params;
   
-  module.exports=GetAllSubmissions;
+      if (!fileURL) {
+        return res.status(400).json({ error: 'classId parameter is required' });
+      }
+  
+      const assignments = await quizSubmission.find({assignmentFileURL:fileURL });
+      res.json(assignments);
+    } catch (error) {
+      console.error('Error fetching Quiz:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
+  
+  
+  
+  module.exports={
+    GetAllSubmissions,GetALLQuizSubmission};

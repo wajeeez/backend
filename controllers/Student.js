@@ -17,6 +17,7 @@ const stdAssignmentFile = require("../models/stdassignmentFile");
 const sendEmail = require("./email");
 const sendEmailUpdate = require("./email");
 const teachermodel = require("../models/teachermodel");
+const quizSubmission = require("../models/QuizSubmissionFile");
 const passwordPattern =
   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+~`\-={}[\]:;"'<>,.?/])(?!.*\s).{8,}$/;
 
@@ -200,6 +201,26 @@ const StudentAuth ={
 
   },
 
+  async getQuizAssignment(req,res,next){
+
+    const {fileURL} = req.query
+
+      //const subResponse = await stdAssignmentFile.findOne({_id:response.submissionFileURL})
+
+      const file = await stdAssignmentFile.findById({_id:fileURL});
+
+      if (!file) {
+        return res.status(404).json({ message: 'File not found' });
+      }
+  
+      res.setHeader('Content-Type', file.contentType);
+      res.send(file.data);
+
+      //const submitURL = response.data.Submission
+  },
+
+
+
   async getSubmissionFileURL(req, res, next) {
     const { Email, classId } =  req.query;
   
@@ -222,6 +243,22 @@ const StudentAuth ={
 
 
 
+  async getQuizFileURL(req, res, next) {
+    const { Email, classId } =  req.query;
+  
+    // Check if Email or classId is null or undefined
+    if (!Email || !classId) {
+      return res.status(400).json({ error: 'Email and classId are required' });
+    }
+  
+    const response = await quizSubmission.find({ Email, classId });
+  
+    if (!response) {
+      return res.status(200).json({ error: 'NO SUBMISSION', response });
+    } else {
+      return res.json({ response });
+    }
+  },
 
 
   async CheckSubmissionAvailable(req,res,next){
@@ -239,6 +276,24 @@ const StudentAuth ={
 
 
   },
+
+  async CheckQuizSubmission(req,res,next){
+
+    const {Email,classId} =req.body;
+
+    const response = await stdAssignmentFile.findOne({email:Email, classId:classId})
+
+    if(!response){
+      res.status(500).json({ error: 'Error fetching Student Data' });
+    }else{
+    
+      res.json({response});
+    }
+
+
+  },
+
+
 
 
 
@@ -261,6 +316,31 @@ const StudentAuth ={
     
 
   },
+
+
+
+  async getAllQuizSubmission(req,res,next){
+
+    const {classId,fileURL} = req.query
+
+      //const subResponse = await stdAssignmentFile.findOne({_id:response.submissionFileURL})
+
+      const file = await quizSubmission.find({assignmentFileURL:fileURL,classId:classId});
+
+      if (!file) {
+        return res.status(404).json({ message: 'File not found' });
+      }
+  
+     
+      res.json(file);
+
+      //const submitURL = response.data.Submission;
+    
+
+  },
+
+
+
 
 
 
@@ -334,14 +414,14 @@ const StudentAuth ={
   async creatGroup(req,res,next){
 
     const {class_id} = req.params
-    const {stdIds} = req.body
+    const {stdIds,nameList} = req.body
 
       //const subResponse = await stdAssignmentFile.findOne({_id:response.submissionFileURL})
 
 
     console.log(class_id)
     console.log(stdIds)
-
+    console.log(nameList)
     const time = null
 
 
@@ -349,7 +429,7 @@ const StudentAuth ={
      
       stdIds:stdIds,
       classID:class_id,
-    
+      nameList:nameList,
       
     })
 

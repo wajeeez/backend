@@ -17,6 +17,8 @@ const NotificationUploadGroupAssignment = require('../models/NotificationUploadG
 const NotificationAssignmentUpload = require('../models/NotificationUploadAssignment');
 const Group = require('../models/Groups');
 const NotificationSubmission = require('../models/NotificationSubmission');
+const Quiz = require('../models/Quiz');
+const quizSubmission = require('../models/QuizSubmissionFile');
 
 async function UploadAssignment(req, res, next) {
   try {
@@ -72,6 +74,64 @@ async function UploadAssignment(req, res, next) {
     return res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
+
+
+async function UploadQuiz(req, res, next) {
+  try {
+    // Check if a file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const { originalname, buffer, mimetype } = req.file;
+    const { classId, title, teacherID, fileName, subjectName, deadline,time, totalMarks } = req.body;
+
+
+    const file = new fileSchema({
+      name: originalname,
+      data: buffer,
+      contentType: mimetype,
+    });
+
+    // Save the file document
+    const savedFile = await file.save();
+
+    // Access the _id field of the saved file
+    const fileURL = savedFile._id;
+    console.log(fileURL)
+
+    const newAssignment = new Quiz({
+      classId,
+      title,
+      totalMarks,
+      teacherID,
+      subjectName,
+      fileName,
+      time,
+      fileURL,
+      deadline, // Save the deadline in the Assignment model
+    });
+
+    await newAssignment.save();
+
+ 
+    const notification = new NotificationAssignmentUpload({
+      classId: classId,
+      message: "New Quiz Uploaded",
+      deadline: deadline, // Save the deadline in the Assignment model
+      time:time,
+    });
+
+    await notification.save();
+
+    return res.status(201).json({ message: 'Quiz uploaded successfully' });
+  } catch (err) {
+    // Handle any errors that occurred during assignment upload
+    return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
+
+
 
 
 async function UploadGroupAssignment(req, res, next) {
@@ -344,7 +404,7 @@ async function editTeacherAssignment(req, res, next) {
   try {
     const assignmentId = req.params._id;
     const { originalname, buffer, mimetype } = req.file;
-    const { classId, teacherID, fileName, title,time, remarks } = req.body;
+    const { classId, teacherID, fileName, title,time, remarks ,deadline,totalMarks } = req.body;
 
     const existingAssignment = await Assignment.findById(assignmentId);
 
@@ -378,6 +438,8 @@ async function editTeacherAssignment(req, res, next) {
     if (title) existingAssignment.title = title;
     if (time) existingAssignment.time = time
     if (remarks) existingAssignment.remarks = remarks;
+    if (totalMarks) existingAssignment.totalMarks = totalMarks;
+    if (deadline) existingAssignment.deadline = deadline;
 
     // Save the updated assignment
     await existingAssignment.save();
@@ -390,6 +452,58 @@ async function editTeacherAssignment(req, res, next) {
   }
 }
 
+
+async function quizTeacherEdit(req, res, next) {
+  try {
+    const assignmentId = req.params._id;
+    const { originalname, buffer, mimetype } = req.file;
+    const { classId, teacherID, fileName, title,time, remarks,totalMarks,deadline } = req.body;
+
+    const existingAssignment = await Quiz.findById(assignmentId);
+
+    if (!existingAssignment) {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
+
+    // Update file information if a new file is provided
+    if (req.file) {
+      // Remove the existing associated file
+      if (existingAssignment.fileURL) {
+        await fileSchema.findByIdAndRemove(existingAssignment.fileURL);
+      }
+
+      // Create a new file document
+      const newFile = new fileSchema({
+        name: originalname,
+        data: buffer,
+        contentType: mimetype,
+      });
+
+      // Save the new file document
+      const savedFile = await newFile.save();
+      existingAssignment.fileURL = savedFile._id;
+    }
+
+    // Update other assignment information if provided
+    if (classId) existingAssignment.classId = classId;
+    if (teacherID) existingAssignment.teacherID = teacherID;
+    if (fileName) existingAssignment.fileName = fileName;
+    if (title) existingAssignment.title = title;
+    if (time) existingAssignment.time = time
+    if (remarks) existingAssignment.remarks = remarks;
+    if (totalMarks) existingAssignment.totalMarks = totalMarks;
+    if (deadline) existingAssignment.deadline = deadline;
+
+    // Save the updated assignment
+    await existingAssignment.save();
+
+    return res.status(200).json({ message: 'Quiz updated successfully' });
+
+  } catch (err) {
+    // Handle any errors that occurred during assignment upload
+    return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+}
 
 
 
@@ -442,6 +556,32 @@ async function deleteAssignment(req, res, next) {
     // await Submissions.deleteOne({ fileURL: fileURL });
 
     return res.status(200).json({ message: 'Assignment deleted successfully' });
+  } catch (err) {
+    // Handle any errors that occurred during assignment deletion
+    console.error(err);
+    return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
+
+//Delete Quiz
+
+async function deleteQuiz(req, res, next) {
+  try {
+    const _id = req.params._id;
+
+    // Find the assignment by fileURL
+    const quiz = await Quiz.findOne({_id: _id });
+    // const submit = await Submissions.findOne({ _id:_id });
+
+    if (!quiz ) {
+    return res.status(404).json({ message: 'Quiz not found' });
+    }
+
+    // Delete the assignment
+    await Quiz.deleteOne({ _id: _id });
+    // await Submissions.deleteOne({ fileURL: fileURL });
+
+    return res.status(200).json({ message: 'Quiz deleted successfully' });
   } catch (err) {
     // Handle any errors that occurred during assignment deletion
     console.error(err);
@@ -544,8 +684,58 @@ async function deleteSubmission(req, res, next) {
   }
 };
 
+
+async function deleteQuizSubmission(req, res, next) {
+  try {
+    const fileURL = req.params.fileURL;
+    const assignURL = req.body.assignURL;
+
+
+    const submissionFileURL = fileURL
+    // // Find the assignment by fileURL
+    // const assignment = await Assignment.findOne({fileURL: fileURL });
+    const submission = await Submissions.findById(fileURL);
+    const submitModel = await quizSubmission.find({submissionFileURL:submissionFileURL})
+    if (!submission || !submitModel) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    console.log('File URL:', fileURL, typeof fileURL);
+    console.log('Assign URL:', assignURL, typeof assignURL);
+
+    // Update the assignment
+    const updateResult = await Quiz.updateOne(
+      { fileURL: assignURL.toString() },
+      {
+        $pull: { submissionURL: fileURL.toString() },
+      },
+      { new: true }
+    );
+
+    // Check if the assignment update was successful
+    if (updateResult.nModified === 0) {
+      // If no documents were modified, it means the assignment was not found or the value wasn't in the array
+      return res.status(404).json({ message: 'Assignment not found or submissionURL not in array' });
+    }
+
+    // Delete the submission
+    await Submissions.deleteOne({ _id: fileURL });
+
+    await quizSubmission.deleteOne({submissionFileURL:submissionFileURL})
+
+    
+
+    return res.status(200).json({ message: 'Assignment deleted successfully' });
+  } catch (err) {
+    // Handle any errors that occurred during assignment deletion
+    console.error(err);
+    return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
+
+
 module.exports = {
-  UploadAssignment, UploadLecture, UploadGroupAssignment
-  , deleteAssignment, DeleteLecture, deleteSubmission,deleteGroup,
+  UploadAssignment, UploadLecture, UploadGroupAssignment,deleteQuizSubmission
+  , deleteAssignment, DeleteLecture, deleteSubmission,deleteGroup,deleteQuiz,UploadQuiz,quizTeacherEdit,
   EditLecture, UploadSubmission,SubmitGroupMarks, getAssignmentNotification,editTeacherAssignment, getSubmissionNotification
 };

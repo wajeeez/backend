@@ -11,6 +11,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const fileSchema = require("./../models/assignementFile");
 const Lecture = require('../models/Lecture');
+const Quiz = require('../models/Quiz');
 
 async  function getAllAssignments(req, res) {
     try {
@@ -28,6 +29,24 @@ async  function getAllAssignments(req, res) {
     }
   };
   
+
+
+  
+async  function getAllQuiz(req, res) {
+  try {
+    const { class_id } = req.params;
+
+    if (!class_id) {
+      return res.status(400).json({ error: 'classId parameter is required' });
+    }
+
+    const assignments = await Quiz.find({classId:class_id });
+    res.json(assignments);
+  } catch (error) {
+    console.error('Error fetching assignments:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
   
 async  function getAllLecture(req, res) {
@@ -49,4 +68,4 @@ async  function getAllLecture(req, res) {
 
   
   
-  module.exports={getAllAssignments,getAllLecture};
+  module.exports={getAllAssignments,getAllLecture,getAllQuiz};
