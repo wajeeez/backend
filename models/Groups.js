@@ -10,6 +10,11 @@ const Groups = new mongoose.Schema({
         type: String,
         required: true
       },
+      nameList:{
+        type: String,
+        default:"",
+        required: true
+      },
       fileURL: {
         type: String,
         default:""

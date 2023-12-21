@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const submissionSchema = new mongoose.Schema({
+const quizSubmissionschema = new mongoose.Schema({
   Email:{
     type: String,   
     required: true,
@@ -9,7 +9,10 @@ const submissionSchema = new mongoose.Schema({
     type: String,   
     required: true,
   },
-
+  Name:{
+    type:String,
+    required:true,
+  },
   assignmentFileURL: {
     type: String,   
     required: true,
@@ -30,10 +33,6 @@ const submissionSchema = new mongoose.Schema({
   remarks:{
     type: String,
     default:""
-  },
-  Name:{
-    type:String,
-    default:""
   }
 
 
@@ -42,6 +41,6 @@ const submissionSchema = new mongoose.Schema({
     
 });
 
-const Submission = mongoose.model('Submissions', submissionSchema);
+const quizSubmission = mongoose.model('QuizSubmission', quizSubmissionschema);
 
-module.exports = Submission;
+module.exports = quizSubmission;
